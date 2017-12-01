@@ -13,7 +13,7 @@
 
     $ perl get_jjwxc_vip.pl [cookie_file/cookie_string] [novelid] [max_no_vip_chapter_num] [max_vip_chapter_num]
 
-按 作者-书名.txt 格式保存，以 微笑的猫《墙头马上》为例:
+按 作者-书名.txt 格式保存，以 [微笑的猫《墙头马上》](http://m.jjwxc.net/book2/217747?more=0&whole=1) 为例:
     
     $ perl get_jjwxc_vip.pl ~/.mozilla/firefox/a1xxxxxx.default/cookies.sqlite 217747 20 41 | tee sample.log
 
