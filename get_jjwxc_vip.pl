@@ -11,45 +11,49 @@ use Data::Dumper;
 our $CHARSET  = 'cp936';
 our $BASE_URL = "http://m.jjwxc.net";
 
-my ( $cookie, $novel_id, $max_no_v, $max_v ) = @ARGV;
+my ( $cookie, $novel_id ) = @ARGV;
 
-get_jjwxc_vip( $cookie, $novel_id, $max_no_v, $max_v );
+get_jjwxc_vip( $cookie, $novel_id );
 
 sub get_jjwxc_vip {
-    my ( $cookie, $novel_id, $max_no_v, $max_v ) = @_;
+  my ( $cookie, $novel_id ) = @_;
 
-    my $GET_LJJ_SUB = gen_get_url_sub( $cookie, 'jjwxc.net' );
-    my $index_u = "$BASE_URL/book2/$novel_id?more=0&whole=1";
-    my $c       = $GET_LJJ_SUB->( $index_u );
+  my $GET_LJJ_SUB = gen_get_url_sub( $cookie, 'jjwxc.net' );
+  my $index_u     = "$BASE_URL/book2/$novel_id?more=0&whole=1";
+  my $c           = $GET_LJJ_SUB->( $index_u );
+  $c = decode( $CHARSET, $c );
+  my ( $cc )          = $c =~ m#章节列表：<br/>.+?(<a.+?)<\/div>#s;
+  my @f               = $cc =~ m#<a.+?href="(.+?/$novel_id/\d+).+?>(.+?)</a>#sg;
+  my $max_chapter_num = ( $#f + 1 ) / 3;
+
+  my ( $book, $writer ) = $c =~ m#<title>《(.+?)》(.+?)_#s;
+  print encode( locale => "$writer, $book\n" );
+
+  my @floor;
+  for my $i ( 1 .. $max_chapter_num ) {
+    my $j = 2 * $i - 1;
+    my $t = $f[$j];
+    $t =~ s/^\d+\.(&nbsp;)*//;
+    $t =~ s/&nbsp/ /g;
+    $t =~ s/^.+>//;
+    $t =~ s/\s+/ /g;
+
+    my $ui = 2 * $i - 2;
+    my $u  = "$BASE_URL$f[$ui]";
+    print encode( locale => "get chapter $i : $t " );
+
+    my $c = $GET_LJJ_SUB->( $u );
     $c = decode( $CHARSET, $c );
-    my ( $cc ) = $c =~ m#章节列表：<br/>.+?(<a.+?)<\/div>#s;
-    my @f = $cc =~ m#<a.+?/$novel_id/(\d+).+?>(.+?)</a>#sg;
+    my ( $cc ) = $c =~ m#<h2[^>]+>.+?<li>(.+?)</li>#s;
 
-    my ( $book, $writer ) = $c =~ m#<title>《(.+?)》(.+?)_#s;
-    print encode( locale => "$writer, $book\n" );
+    push @floor, { id => $i, title => $t, content => $cc };
+  } ## end for my $i ( 1 .. $max_chapter_num)
 
-    my @floor;
-    for my $i ( 1 .. $max_v ) {
-        my $j = 2 * $i - 1;
-        my $t = $f[$j];
-        $t =~ s/^\d+\.(&nbsp;)*//;
-        $t =~ s/&nbsp/ /g;
-        $t =~ s/^.+>//;
-        $t =~ s/\s+/ /g;
-
-        my $u = $i <= $max_no_v ? "$BASE_URL/book2/$novel_id/$i" : "$BASE_URL/vip/$novel_id/$i";
-        print encode( locale => "get chapter $i : $t " );
-
-        my $c = $GET_LJJ_SUB->( $u );
-        $c = decode( $CHARSET, $c );
-        my ( $cc ) = $c =~ m#<h2[^>]+>.+?<li>(.+?)</li>#s;
-
-        push @floor, { id => $i, title => $t, content => $cc };
-    }
-
-    my $d = { writer => $writer, book => $book, floor_list => \@floor, floor_num => $max_v };
-    my $packer = Novel::Robot::Packer->new( type => 'txt' );
-    my $ret = $packer->main( $d, with_toc => 0, output => encode( locale => "$writer-$book.txt" ) );
+  my $d = { writer => $writer, book => $book, floor_list => \@floor, floor_num => $max_chapter_num };
+  my $packer = Novel::Robot::Packer->new( type => 'txt' );
+  my $output = encode( locale => "$writer-$book.txt" );
+  print $output, "\n";
+  my $ret = $packer->main( $d, with_toc => 0, output => $output );
 } ## end sub get_jjwxc_vip
 
 #-------------
