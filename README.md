@@ -1,0 +1,2 @@
+# get_jjwxc_vip
+将jjwxc账号上已购买的VIP文章存为本地TXT
