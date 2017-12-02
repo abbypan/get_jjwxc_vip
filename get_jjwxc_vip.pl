@@ -24,7 +24,7 @@ sub get_jjwxc_vip {
   $c = decode( $CHARSET, $c );
   my ( $cc )          = $c =~ m#章节列表：<br/>.+?(<a.+?)<\/div>#s;
   my @f               = $cc =~ m#<a.+?href="(.+?/$novel_id/\d+).+?>(.+?)</a>#sg;
-  my $max_chapter_num = ( $#f + 1 ) / 3;
+  my $max_chapter_num = ( $#f + 1 ) / 2;
 
   my ( $book, $writer ) = $c =~ m#<title>《(.+?)》(.+?)_#s;
   print encode( locale => "$writer, $book\n" );
