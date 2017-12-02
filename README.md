@@ -5,8 +5,9 @@
 
 以debian环境为例
 
-    $ apt-get install curl firefox
+    $ apt-get install firefox
     $ cpanm -n Novel::Robot::Packer
+    $ cpanm -n Novel::Robot::Browser
     $ cpanm -n Encode::Locale
 
 # 用法
